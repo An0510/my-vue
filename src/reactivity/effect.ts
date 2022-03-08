@@ -9,7 +9,7 @@ class ReactiveEffect{
     }
     run(){
         activeEffect = this
-        this.fn()
+        return this.fn()
     }
 }
 
@@ -18,7 +18,8 @@ export function effect(fn){
     const _effect = new ReactiveEffect(fn)
 
     _effect.run()
-
+    // effect 返回 runner 直接获取run是没有this的,用bind以当前的effect实例作为this
+    return _effect.run.bind(_effect)
 }
 
 //? 收集依赖
