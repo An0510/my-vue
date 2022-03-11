@@ -71,6 +71,8 @@ export function track(target, key) {
         dep = new Set() // set {}
         depsMap.set(key, dep) // depsMap {key: set{}}
     }
+    // 避免activeEffect为undefined的情况(也就是没有effect单纯一个reactive对象触发get和track时)
+    if(!activeEffect) return
     trackEffects(dep);
 }
 export function trackEffects(dep) {
@@ -102,8 +104,4 @@ export function trigger(target, key) {
 export function stop(runner) {
     // 执行ReactiveEffect实例上的run方法
     runner.effect.stop()
-}
-
-export function onStop(){
-
 }

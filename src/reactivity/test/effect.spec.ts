@@ -4,14 +4,10 @@ import {effect,stop} from "../effect";
 describe('effect', () => {
 
     it("happy path", () => {
-        let dummy;
-        const counter = reactive({num: 0});
-        effect(() => (dummy = counter.num));
-
-        expect(dummy).toBe(0);
-        // Todo
-        counter.num = 7;
-        expect(dummy).toBe(7);
+        const original = {foo:1}
+        const observed = reactive(original)
+        expect(observed).not.toBe(original)
+        expect(observed.foo).toBe(1)
     })
 
     it("should return runner when call effect", () => {
