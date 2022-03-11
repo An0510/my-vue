@@ -4,7 +4,8 @@ const targetMap = new Map()
 let activeEffect = void 0
 //? 依赖类
 class ReactiveEffect{
-    constructor(public fn) {
+    // 可选用?
+    constructor(public fn,public scheduler?) {
 
     }
     run(){
@@ -13,12 +14,14 @@ class ReactiveEffect{
     }
 }
 
-export function effect(fn){
-    // fn
-    const _effect = new ReactiveEffect(fn)
-
+export function effect(fn,options:any = {}){
+    // 拿到scheduler
+    const scheduler = options.scheduler
+    // fn 传入scheduler 往实例上绑scheduler属性
+    const _effect = new ReactiveEffect(fn,scheduler)
+    // 初始化时先run一次,
     _effect.run()
-    // effect 返回 runner 直接获取run是没有this的,用bind以当前的effect实例作为this
+    // effect 返回 runner函数 直接获取run是没有this的,用bind以当前的effect实例作为this
     return _effect.run.bind(_effect)
 }
 
@@ -46,6 +49,13 @@ export function trigger(target, key){
     let dep = depsMap.get(key)
     // 将所有依赖遍历执行
     for (const effect of dep) {
-        effect.run()
+        // 当effect上绑着scheduler时,执行scheduler函数
+        if(effect.scheduler){
+            effect.scheduler()
+        } else {
+            effect.run()
+        }
     }
 }
+
+
