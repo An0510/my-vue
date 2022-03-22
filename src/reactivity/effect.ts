@@ -1,7 +1,7 @@
 import {extend} from "../shared";
 const targetMap = new Map()
 // 为了将run方法中的effect中fn传递给track函数
-let activeEffect = void 0
+let activeEffect
 
 //? 依赖类
 class ReactiveEffect {
