@@ -42,7 +42,7 @@ describe('effect', () => {
         )
         expect(scheduler).not.toHaveBeenCalled()
         expect(dummy).toBe(1)
-        // 触发set 然后触发 trigger
+        // 触发get 然后触发set 然后触发 trigger
         obj.foo++
         // 这时候调用不是fn而是schedule
         expect(scheduler).toHaveBeenCalledTimes(1)
@@ -62,10 +62,11 @@ describe('effect', () => {
         })
         obj.prop = 2
         expect(dummy).toBe(2)
-        stop(runner) // 当runner停止后,不再触发effect
-        // obj.prop = 3
-        // ! obj.prop++ 存在问题
-
+        stop(runner) // 当runner停止后,不再触发effect(清空effect)
+        // obj.prop = 3 仅set
+        // ! obj.prop++ 存在问题 obj.prop = obj.prop + 1 会触发get和set
+        // ! 由于在stop runner时清空了effect 当get时又重新收集了依赖,就相当于白stop了.
+        obj.prop++
         expect(dummy).toBe(2)
         runner()
         expect(dummy).toBe(3)

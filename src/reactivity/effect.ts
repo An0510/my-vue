@@ -1,28 +1,42 @@
 import {extend} from "../shared";
+
 const targetMap = new Map()
 // 为了将run方法中的effect中fn传递给track函数
 let activeEffect
+let shouldTrack
 
 //? 依赖类
 class ReactiveEffect {
     deps = []
     active = true
-    onStop?:()=>void
+    onStop?: () => void
+
     // 可选用?
     constructor(public fn, public scheduler?) {
 
     }
 
     run() {
+        // !这一步回去收集依赖 用shouldTrack做区分
+        // !当stop时,fn中shouldTrack为false,不做收集
+        if (!this.active) {
+            return this.fn()
+        }
+        // !非stop时,fn中shouldTrack为true
+        shouldTrack = true
         activeEffect = this
-        return this.fn()
+
+        const result = this.fn()
+        // reset 全局变量 重置为false
+        shouldTrack = false
+        return result
     }
 
     stop() {
         // 通过实例上的active 避免重复stop
         if (this.active) {
             cleanupEffect(this)
-            if(this.onStop){
+            if (this.onStop) {
                 this.onStop()
             }
             this.active = false
@@ -32,10 +46,14 @@ class ReactiveEffect {
 
 // 删除当前effect
 function cleanupEffect(effect) {
-    effect.deps.forEach(dep => {
-        // 删掉当前的effect
-        dep.delete(effect)
-    })
+    const { deps } = effect
+    if(deps.length){
+        deps.forEach(dep => {
+            // 删掉当前的effect
+            dep.delete(effect)
+        })
+        deps.length = 0
+    }
 }
 
 export function effect(fn, options: any = {}) {
@@ -45,7 +63,7 @@ export function effect(fn, options: any = {}) {
     const _effect = new ReactiveEffect(fn, scheduler)
     // extend就是重命名了Object.assign
     // 把options放到_effect上
-    extend(_effect,options)
+    extend(_effect, options)
 
     // 初始化时先run一次,
     _effect.run()
@@ -57,8 +75,14 @@ export function effect(fn, options: any = {}) {
     return runner
 }
 
+function isTracking(){
+    // 避免activeEffect为undefined的情况(也就是没有effect单纯一个reactive对象触发get和track时)
+    return shouldTrack&&activeEffect!==undefined
+}
+
 //? 收集依赖
 export function track(target, key) {
+    if(!isTracking()) return
     // target -> key -> dep
     let depsMap = targetMap.get(target)
     if (!depsMap) {
@@ -71,10 +95,9 @@ export function track(target, key) {
         dep = new Set() // set {}
         depsMap.set(key, dep) // depsMap {key: set{}}
     }
-    // 避免activeEffect为undefined的情况(也就是没有effect单纯一个reactive对象触发get和track时)
-    if(!activeEffect) return
     trackEffects(dep);
 }
+
 export function trackEffects(dep) {
     if (!dep.has(activeEffect)) {
         // 向dep中添加activeEffect 依赖实际上就收集到了targetMap中
