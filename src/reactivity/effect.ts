@@ -3,11 +3,12 @@ import {extend} from "../shared";
 const targetMap = new Map()
 // 为了将run方法中的effect中fn传递给track函数
 let activeEffect
-let shouldTrack
+let shouldTrack = false
 
 //? 依赖类
 class ReactiveEffect {
     deps = []
+    // 判断是否被stop
     active = true
     onStop?: () => void
 
@@ -25,9 +26,9 @@ class ReactiveEffect {
         // !非stop时,fn中shouldTrack为true
         shouldTrack = true
         activeEffect = this
-
+        // 在调用fn时就又会触发get->track
         const result = this.fn()
-        // reset 全局变量 重置为false
+        // 触发完track后 reset 全局变量shouldTrack 重置为false
         shouldTrack = false
         return result
     }

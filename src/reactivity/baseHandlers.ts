@@ -1,14 +1,15 @@
 // 抽离出get的逻辑
 import {track, trigger} from "./effect";
 import {isReactive, isReadonly, reactive, readonly} from "./reactive";
-import {isObject} from "../shared";
+import {extend, isObject} from "../shared";
 
 // 这样只在初始化时调用一次,不需要每次都重复调用createGetter/createSetter
 const get = createGetter()
 const set = createSetter()
 const readonlyGet = createGetter(true)
+const shallowReadonlyGet = createGetter(true,true )
 
-function createGetter(isReadOnly=false){
+function createGetter(isReadOnly=false,shallow=false){
     return function get(target, key) {
         // 在获取的时候添加__v_isReactive/__v_isReadonly的布尔值
         if(key==='__v_isReactive'){
@@ -18,8 +19,15 @@ function createGetter(isReadOnly=false){
             return isReadOnly
         }
         const res = Reflect.get(target, key)
+
+        // 如果是shallow readonly就不执行
+        if(shallow){
+            return res
+        }
+
         // 处理引用类型嵌套
         if(isObject(res)){
+            // 如果是readonly 就没必要处理嵌套
             return isReadOnly?readonly(res):reactive(res)
         }
         // 非只读状态下需要收集依赖
@@ -52,4 +60,9 @@ export const readonlyHandlers = {
         return true
     }
 }
+
+export const shallowReadonlyHandlers = extend({},readonlyHandlers,{
+    get:shallowReadonlyGet,
+
+})
 
