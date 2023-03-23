@@ -1,7 +1,8 @@
-import {reactive, readonly, isReactive, isReadonly} from "../reactive";
+import {reactive, readonly, isReactive, isReadonly, isProxy} from "../reactive";
+
 describe('reactive',() => {
     it('happy path', function () {
-        const original = { foo: 1 }
+        const original = {foo: 1}
         const observed = reactive(original)
         expect(observed).not.toBe(original)
         expect(observed.foo).toBe(1)
@@ -13,6 +14,8 @@ describe('reactive',() => {
         const readonly1 = readonly(original)
         expect(readonly1).not.toBe(original2)
         expect(readonly1.foo).toBe(1)
+        expect(isProxy(original)).toBe(false)
+        expect(isProxy(observed)).toBe(true)
     });
     it('warn the set', function () {
         console.warn = jest.fn()
