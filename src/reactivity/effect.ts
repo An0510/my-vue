@@ -76,7 +76,7 @@ export function effect(fn, options: any = {}) {
     return runner
 }
 
-function isTracking(){
+export function isTracking(){
     // 避免activeEffect为undefined的情况(也就是没有effect单纯一个reactive对象触发get和track时)
     return shouldTrack&&activeEffect!==undefined
 }
@@ -113,6 +113,10 @@ export function trigger(target, key) {
     // 从全局变量depsMap中拿到对应target对应key的
     let depsMap = targetMap.get(target)
     let dep = depsMap.get(key)
+    triggerEffect(dep)
+}
+// 抽离出来供ref用
+export function triggerEffect(dep){
     // 将所有依赖遍历执行
     for (const effect of dep) {
         // 当effect上绑着scheduler时,执行scheduler函数
@@ -123,7 +127,6 @@ export function trigger(target, key) {
         }
     }
 }
-
 // 停止依赖
 export function stop(runner) {
     // 执行ReactiveEffect实例上的run方法
