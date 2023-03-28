@@ -5,6 +5,7 @@ import {reactive} from "./reactive";
 class  RefImpl {
     private _rawValue: any; // 用以做hasChanged对比
     private _value: any
+    public _v_isRef = true // 标识ref类型
     // ref只有一个value，所以只需要dep就可以
     public dep
     constructor(value) {
@@ -41,4 +42,12 @@ export function convert(value) {
 
 export function ref(value) {
     return new RefImpl(value)
+}
+
+export function isRef(ref) {
+    return !!ref._v_isRef
+}
+
+export function unRef(ref) {
+    return ref._v_isRef ? ref.value : ref
 }
