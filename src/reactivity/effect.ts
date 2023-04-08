@@ -6,7 +6,7 @@ let activeEffect
 let shouldTrack = false
 
 //? 依赖类
-class ReactiveEffect {
+export class ReactiveEffect {
     deps = []
     // 判断是否被stop
     active = true
