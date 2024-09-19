@@ -12,6 +12,10 @@
     "downlevelIteration": true,
     "lib": ["es6", "DOM"]
   },
-  "include": ["src/index.ts", "src/global.d.ts"]
+  "include": [
+    "src/index.ts",
+    "src/global.d.ts",
+    "src/runtime-core/componentProxy.ts"
+  ]
 }
 

@@ -4,12 +4,14 @@ export const App = {
   // <template></template>
   // render 
   render() {
+    window.self = this
     return h(
         'div',
         {
           id: 'root',
           class: ['red', 'hard']
         },
+        "hi! " + this.msg,
         // string
         // 'hi! my-vue',
         // Array
@@ -25,4 +27,4 @@ export const App = {
       msg: 'my-vue'
     }
   }
-}
+};
